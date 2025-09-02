@@ -1,7 +1,7 @@
 
 # gem5 ARM SE: Minimal Build, m5-annotated Workload, and Two-Level Cache Demo
 
-> **Goal**: I built and ran a minimal **ARM (AArch64)** system in gem5 (SE mode), then extended it to a **two-level cache** hierarchy and compared statistics. This README captures my exact steps, commands, scripts, and a few troubleshooting notes. It’s written in the first person so I can drop it straight into a repo.
+> **Goal**: I built and ran a minimal **ARM (AArch64)** system in gem5 (SE mode), then extended it to a **two-level cache** hierarchy and compared statistics. This README captures my exact steps, commands, scripts, and a few troubleshooting notes. 
 
 ---
 
