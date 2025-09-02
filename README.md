@@ -113,11 +113,11 @@ from m5.objects import (
 system = System()
 
 system.clk_domain = SrcClockDomain()
-system.clk_domain.clock = "1GHz"
+system.clk_domain.clock = "8GHz"
 system.clk_domain.voltage_domain = VoltageDomain()
 
 system.mem_mode = "timing"
-system.mem_ranges = [AddrRange("1GiB")]
+system.mem_ranges = [AddrRange("8GiB")]
 
 system.cpu = TimingSimpleCPU()
 system.cpu.createInterruptController()   # required
@@ -254,11 +254,11 @@ from caches import L1ICache, L1DCache, L2Cache
 
 system = System()
 system.clk_domain = SrcClockDomain()
-system.clk_domain.clock = "1GHz"
+system.clk_domain.clock = "8GHz"
 system.clk_domain.voltage_domain = VoltageDomain()
 
 system.mem_mode = "timing"
-system.mem_ranges = [AddrRange("1GiB")]
+system.mem_ranges = [AddrRange("8GiB")]
 
 system.cpu = TimingSimpleCPU()
 system.cpu.createInterruptController()
