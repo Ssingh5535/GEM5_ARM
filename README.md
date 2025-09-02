@@ -1,4 +1,4 @@
-
+.p
 # gem5 ARM SE: Minimal Build, m5-annotated Workload, and Two-Level Cache Demo
 
 > **Goal**: I built and ran a minimal **ARM (AArch64)** system in gem5 (SE mode), then extended it to a **two-level cache** hierarchy and compared statistics. This README captures my exact steps, commands, scripts, and a few troubleshooting notes. 
@@ -157,12 +157,6 @@ Run it (write to an explicit `outdir` so my artifacts don’t land in `m5out/`):
 ./build/ARM/gem5.opt configs/tutorial/part1/simple_arm.py --outdir="$(pwd)/out/arm_nocache"
 ```
 
-**Screenshot placeholder**: _ARM simple run output_  
-`![ARM Simple Run](Images/arm_simple_run.png)`
-
-**Screenshot placeholder**: _Outdir listing (no cache)_  
-`![Outdir arm_nocache](Images/arm_nocache_ls.png)`
-
 If I forget `--outdir`, gem5 writes to `m5out/` by default.
 
 ---
@@ -181,8 +175,6 @@ grep -E '^(sim_seconds|sim_ticks|sim_freq|host_inst_rate|host_op_rate)\\b' out/a
 grep -E '^(system\\.cpu\\.)?(committedInsts|numCycles|ipc)\\b' out/arm_nocache/roi_stats.txt || true
 ```
 
-**Screenshot placeholder**: _ROI stats no-cache_  
-`![ROI No Cache](Images/roi_nocache.png)`
 
 ---
 
@@ -310,9 +302,6 @@ I ran it:
 ./build/ARM/gem5.opt configs/tutorial/part1/two_level.py --outdir="$(pwd)/out/arm_l1l2"
 ```
 
-**Screenshot placeholder**: _ARM two-level run output_  
-`![ARM Two-Level Run](Images/arm_l1l2_run.png)`
-
 ---
 
 ## 7) Extract cache stats (ROI) and compare
@@ -352,8 +341,7 @@ system.l2cache.overallMissRate::total   0.863014
 
 Interpretation: L1D/L1I show non-trivial hit rates, and the L2 miss rate looks high because the ROI is extremely short (mostly **compulsory** misses).
 
-**Screenshot placeholder**: _ROI stats with caches_  
-`![ROI With Caches](Images/roi_l1l2.png)`
+
 
 ---
 
