@@ -390,13 +390,6 @@ configs/tutorial/part1/
 └── two_level.py                # L1I/L1D + shared L2 config
 ```
 
-**Screenshot placeholders (to fill later):**
-- `Images/arm_simple_run.png`
-- `Images/arm_nocache_ls.png`
-- `Images/roi_nocache.png`
-- `Images/arm_l1l2_run.png`
-- `Images/roi_l1l2.png`
-
 ---
 
 ## 11) Quick-copy commands
