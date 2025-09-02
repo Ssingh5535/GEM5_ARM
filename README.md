@@ -417,9 +417,4 @@ aarch64-linux-gnu-g++ -O2 -mbranch-protection=none \
 # Run with L1+L2
 ./build/ARM/gem5.opt configs/tutorial/part1/two_level.py    --outdir="$(pwd)/out/arm_l1l2"
 ```
-
----
-
-## 12) License
-
-I’m retaining the gem5 project’s original licensing for their code; my snippets herein are intended for tutorial use.
+’m retaining the gem5 project’s original licensing for their code; my snippets herein are intended for tutorial use.
