@@ -2,7 +2,6 @@
 # gem5 ARM SE: Minimal Build, m5-annotated Workload, and Two-Level Cache Demo
 
 > **Goal**: I built and ran a minimal **ARM (AArch64)** system in gem5 (SE mode), then extended it to a **two-level cache** hierarchy and compared statistics. This README captures my exact steps, commands, scripts, and a few troubleshooting notes. 
-
 ---
 
 ## 0) Environment
@@ -351,14 +350,63 @@ system.l2cache.overallMisses::total        63
 system.l2cache.overallMissRate::total   0.863014
 ```
 
-Interpretation: L1D/L1I show non-trivial hit rates, and the L2 miss rate looks high because the ROI is tiny (mostly **compulsory** misses at cold start). For more pronounced L2 reuse I’d warm caches, use a larger footprint, or enable a simple prefetcher—but that’s outside this minimal build demo.
+Interpretation: L1D/L1I show non-trivial hit rates, and the L2 miss rate looks high because the ROI is extremely short (mostly **compulsory** misses).
 
 **Screenshot placeholder**: _ROI stats with caches_  
 `![ROI With Caches](Images/roi_l1l2.png)`
 
 ---
 
-## 8) Troubleshooting notes I hit (and fixes)
+## 8) L2 size sensitivity (256 KiB → 1 MiB) and ROI stats
+
+To check whether a larger L2 helps this tiny m5-annotated workload, I changed the L2 size in my cached config and compared ROI (`m5_reset_stats` → `m5_dump_stats`) counters.
+
+### Change I made
+
+In `configs/tutorial/part1/two_level.py` I set the L2 size to 1 MiB:
+
+```python
+# Shared L2 (changed from 256kB)
+system.l2cache = L2Cache(size='1MB')
+```
+
+Then I re-ran to a clean outdir and extracted ROI stats:
+
+```bash
+./build/ARM/gem5.opt configs/tutorial/part1/two_level.py --outdir="$(pwd)/out/arm_l2_1mb"
+
+awk '/Begin Simulation Statistics/{b++} b==2{print} /End Simulation Statistics/{if(b==2)exit}' \
+  out/arm_l2_1mb/stats.txt > out/arm_l2_1mb/roi_stats.txt || cp out/arm_l2_1mb/stats.txt out/arm_l2_1mb/roi_stats.txt
+```
+
+### Quantitative ROI cache counters (1 MiB L2)
+
+From `out/arm_l2_1mb/roi_stats.txt` I saw:
+
+```
+system.cpu.dcache.overallHits::total            211
+system.cpu.dcache.overallMisses::total           23
+system.cpu.dcache.overallMissRate::total    0.098291
+
+system.cpu.icache.overallHits::total            588
+system.cpu.icache.overallMisses::total           50
+system.cpu.icache.overallMissRate::total    0.078370
+
+system.l2cache.overallHits::total                10
+system.l2cache.overallMisses::total              63
+system.l2cache.overallMissRate::total       0.863014
+```
+
+### Interpretation
+
+- L1D miss rate ≈ **9.83%** (211 hits / 23 misses) and L1I ≈ **7.84%** (588 / 50) show that the L1s are doing useful work.
+- L2 miss rate ≈ **86.3%** looks high because the ROI is extremely short (“hello” + exit), so almost all L2 requests are **compulsory** (cold) misses with little chance of reuse before program termination.
+- When I compared against the **256 KiB** L2 (the earlier default), the ROI cache counters and miss rates were **effectively the same** for this micro workload, confirming that increasing L2 to 1 MiB didn’t materially change behavior under a cold, short ROI.
+- The meaningful win remains **no-cache → L1+L2**, which reduced ROI `sim_ticks` and produced non-trivial L1 hit rates.
+
+---
+
+## 9) Troubleshooting notes I hit (and fixes)
 
 - **“CPU has 0 interrupt controllers” fatal**: I added `system.cpu.createInterruptController()` after creating the CPU.
 - **“bti unimplemented” warning**: I compiled my AArch64 binary with `-mbranch-protection=none`.
@@ -371,7 +419,7 @@ Interpretation: L1D/L1I show non-trivial hit rates, and the L2 miss rate looks h
 
 ---
 
-## 9) What I’d do next
+## 10) What I’d do next
 
 - Swap `TimingSimpleCPU` for `O3` and compare IPC/latency sensitivity.
 - Tweak cache sizes/associativity and confirm trends on a larger workload.
@@ -379,7 +427,7 @@ Interpretation: L1D/L1I show non-trivial hit rates, and the L2 miss rate looks h
 
 ---
 
-## 10) File layout (what this README expects)
+## 11) File layout (what this README expects)
 
 ```
 configs/tutorial/part1/
@@ -391,29 +439,6 @@ configs/tutorial/part1/
 ```
 
 ---
-
-## 11) Quick-copy commands
-
-```bash
-# Build binaries
-scons -j"$(nproc)" build/ARM/gem5.opt
-(cd util/m5 && scons -j"$(nproc)" build/arm64/out/m5 build/arm64/out/libm5.a)
-
-# Build AArch64 program
-aarch64-linux-gnu-g++ -O2 -mbranch-protection=none \
-  -I"$PWD/include" -L"$PWD/util/m5/build/arm64/out" -lm5 \
-  -o configs/tutorial/part1/arm-hello-m5 configs/tutorial/part1/arm_hello_m5.c
-
-# Run baseline (no cache)
-./build/ARM/gem5.opt configs/tutorial/part1/simple_arm.py   --outdir="$(pwd)/out/arm_nocache"
-
-# Run with L1+L2
-./build/ARM/gem5.opt configs/tutorial/part1/two_level.py    --outdir="$(pwd)/out/arm_l1l2"
-```
-
----
-
-
 
 ## 12) Quick-copy commands
 
@@ -439,10 +464,3 @@ aarch64-linux-gnu-g++ -O2 -mbranch-protection=none \
 ```
 
 ---
-
-## 13) License
-
-I’m retaining the gem5 project’s original licensing for their code; my snippets herein are intended for tutorial use.
-
-
-
